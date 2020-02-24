@@ -10,6 +10,13 @@ router.get("/", (request, response, next) => {
   });
 });
 
+router.get("/test", (request, response, next) => {
+  if (err) return next(err);
+  response.status(201).json({
+    message: "testtttting"
+  });
+});
+
 router.post("/", (request, response, next) => {
   const {
     first_name_a,
@@ -61,8 +68,10 @@ router.post("/", (request, response, next) => {
 });
 
 router.get("/bySide/:side", (request, response, next) => {
+  const { side } = request.params;
+  console.log("REQUEST.PARAMS", request.params);
   pool.query(
-    "SELECT * FROM invitations WHERE side = id ORDER BY id asc",
+    "SELECT * FROM invitations WHERE side = $1 ORDER BY id asc",
     [side],
     (err, res) => {
       if (err) return next(err);
@@ -74,7 +83,6 @@ router.get("/bySide/:side", (request, response, next) => {
 router.get("/totals", (request, response, next) => {
   pool.query(
     "SELECT SUM (total_adults) AS total_adults, SUM (total_kids) AS total_kids FROM invitations",
-    [side],
     (err, res) => {
       if (err) return next(err);
       response.json(res.rows);
@@ -83,6 +91,7 @@ router.get("/totals", (request, response, next) => {
 });
 
 router.get("/totals/:side", (request, response, next) => {
+  const { side } = request.params;
   pool.query(
     "SELECT SUM (total_adults) AS total_adults, SUM (total_kids) AS total_kids FROM invitations WHERE side = $1",
     [side],
@@ -94,6 +103,7 @@ router.get("/totals/:side", (request, response, next) => {
 });
 
 router.get("/totals/:relation/:side", (request, response, next) => {
+  const { side, relation } = request.params;
   pool.query(
     "SELECT SUM (total_adults) AS total_adults, SUM (total_kids) AS total_kids FROM invitations WHERE side = $1 AND relation = $2",
     [side, relation],
@@ -105,6 +115,7 @@ router.get("/totals/:relation/:side", (request, response, next) => {
 });
 
 router.get("/invitation/:first_name/:last_name", (request, response, next) => {
+  const { first_name, last_name } = request.params;
   pool.query(
     "select * from invitations where first_name_a = $1 and last_name_a = $2 or first_name_b = $1 and last_name_b = $2",
     [first_name, last_name],
@@ -117,7 +128,6 @@ router.get("/invitation/:first_name/:last_name", (request, response, next) => {
 
 router.delete("/:id", (request, response, next) => {
   const { id } = request.params;
-  console.log(id);
   pool.query("DELETE FROM invitations WHERE id = $1", [id], (err, res) => {
     if (err) return next(err);
     response.status(201).json({
