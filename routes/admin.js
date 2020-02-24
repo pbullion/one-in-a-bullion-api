@@ -1,8 +1,6 @@
 const { Router } = require("express");
 const pool = require("../db");
 const fetch = require("node-fetch");
-const moment = require("moment");
-
 const router = Router();
 
 router.get("/", (request, response, next) => {
