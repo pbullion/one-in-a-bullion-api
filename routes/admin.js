@@ -1,85 +1,131 @@
-const { Router } = require('express');
-const pool = require('../db');
-const bcrypt = require('bcrypt-nodejs');
-const jwt = require('jsonwebtoken');
+const { Router } = require("express");
+const pool = require("../db");
+const fetch = require("node-fetch");
+const moment = require("moment");
 
 const router = Router();
 
-router.post('/signup', (request, response, next) => {
-    console.log(request.body.email);
-    console.log(request.body.password);
-    bcrypt.hash(request.body.password, null, null, (err, hash) => {
-        if (err) {
-            return response.status(500).json({
-                error: err
-            })
-        }
-    pool.query(
-        'INSERT INTO admin(email, password) VALUES($1, $2)',
-        [request.body.email, hash],
-        (err, res) => {
-            if (err) return next(err);
-            response.status(201).json({
-                message: "User Created",
-                response: res
-            });
-        }
-    );
-    })
+router.get("/", (request, response, next) => {
+  pool.query("SELECT * FROM invitations ORDER BY id asc", (err, res) => {
+    if (err) return next(err);
+    response.json(res.rows);
+  });
 });
 
-router.get('/login/:email/:password', (request, response, next) => {
-    const { email, password } = request.params;
-    console.log(request.params);
-    pool.query('SELECT * FROM admin WHERE email = $1 and password = $2', [email, password], (err, res) => {
-        if (err) return next(err);
-        if (!res.rows[0]) return response.json({message: "incorrect email and or password"});
-        response.json(res.rows[0]);
-    });
+router.post("/", (request, response, next) => {
+  const {
+    first_name_a,
+    last_name_a,
+    first_name_b,
+    last_name_b,
+    plus_one,
+    num_kids,
+    address,
+    address_apt_number,
+    address_city,
+    address_state,
+    address_zip,
+    relation,
+    side,
+    email,
+    email_alt,
+    total_adults,
+    total_kids
+  } = request.body.message;
+  pool.query(
+    "INSERT INTO invitations(first_name_a, last_name_a, first_name_b, last_name_b, plus_one, num_kids, address, address_apt_number, address_city, address_state, address_zip, relation, side, email, email_alt, total_adults, total_kids) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)",
+    [
+      first_name_a,
+      last_name_a,
+      first_name_b,
+      last_name_b,
+      plus_one,
+      num_kids,
+      address,
+      address_apt_number,
+      address_city,
+      address_state,
+      address_zip,
+      relation,
+      side,
+      email,
+      email_alt,
+      total_adults,
+      total_kids
+    ],
+    (err, res) => {
+      if (err) return next(err);
+      response.status(201).json({
+        message: "Created invite successfully"
+      });
+    }
+  );
 });
 
-router.get('/test/:email/:password', (request, response, next) => {
-    const { email, password } = request.params;
-    pool.query("SELECT * FROM admin where email = $1 and password = $2", [email, password],
-        (err, res) => {
-        console.log(err);
-        if (err) return next(err);
-        console.log("here is the response data", res.rows[0]);
-        if (res.rows[0]) return response.json(res.rows[0]);
-            // bcrypt.compare('7factor', res.rows[0].password, (err, result) => {
-            //     if (err) {
-            //         return response.status(401).json({
-            //             message: 'Auth Failed'
-            //         })
-            //     }
-            //     console.log('here is the result', result);
-            //     if (result) {
-            //         const token = jwt.sign(
-            //             {
-            //                 email: res.rows[0].email,
-            //                 adminId: res.rows[0].id
-            //             },
-            //             'jwtsecretpasswordhaha',
-            //             {
-            //                 expiresIn: "12hr"
-            //             }
-            //         );
-            //         return response.status(200).json({
-            //             message: 'Auth successful',
-            //             token: token
-            //         })
-            //     }
-            //     response.status(401).json({
-            //         message: 'Auth Failed'
-            //     })
-            // })
-        })
-        .catch(err => {
-                console.log(err);
-                res.status(500).json({
-                    error: err
-                })
-            });
+router.get("/bySide/:side", (request, response, next) => {
+  pool.query(
+    "SELECT * FROM invitations WHERE side = id ORDER BY id asc",
+    [side],
+    (err, res) => {
+      if (err) return next(err);
+      response.json(res.rows);
+    }
+  );
+});
+
+router.get("/totals", (request, response, next) => {
+  pool.query(
+    "SELECT SUM (total_adults) AS total_adults, SUM (total_kids) AS total_kids FROM invitations",
+    [side],
+    (err, res) => {
+      if (err) return next(err);
+      response.json(res.rows);
+    }
+  );
+});
+
+router.get("/totals/:side", (request, response, next) => {
+  pool.query(
+    "SELECT SUM (total_adults) AS total_adults, SUM (total_kids) AS total_kids FROM invitations WHERE side = $1",
+    [side],
+    (err, res) => {
+      if (err) return next(err);
+      response.json(res.rows);
+    }
+  );
+});
+
+router.get("/totals/:relation/:side", (request, response, next) => {
+  pool.query(
+    "SELECT SUM (total_adults) AS total_adults, SUM (total_kids) AS total_kids FROM invitations WHERE side = $1 AND relation = $2",
+    [side, relation],
+    (err, res) => {
+      if (err) return next(err);
+      response.json(res.rows);
+    }
+  );
+});
+
+router.get("/invitation/:first_name/:last_name", (request, response, next) => {
+  pool.query(
+    "select * from invitations where first_name_a = $1 and last_name_a = $2 or first_name_b = $1 and last_name_b = $2",
+    [first_name, last_name],
+    (err, res) => {
+      if (err) return next(err);
+      response.json(res.rows);
+    }
+  );
+});
+
+router.delete("/:id", (request, response, next) => {
+  const { id } = request.params;
+  console.log(id);
+  pool.query("DELETE FROM invitations WHERE id = $1", [id], (err, res) => {
+    if (err) return next(err);
+    response.status(201).json({
+      message: "Created message successfully"
     });
+  });
+});
 
 module.exports = router;
