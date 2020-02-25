@@ -4,6 +4,7 @@ const fetch = require("node-fetch");
 const router = Router();
 
 router.get("/", (request, response, next) => {
+  console.log("in the admin route");
   pool.query("SELECT * FROM invitations ORDER BY id asc", (err, res) => {
     if (err) return next(err);
     response.json(res.rows);
