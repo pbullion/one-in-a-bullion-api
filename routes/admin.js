@@ -4,7 +4,6 @@ const fetch = require("node-fetch");
 const router = Router();
 
 router.get("/", (request, response, next) => {
-  console.log("in the admin route");
   pool.query("SELECT * FROM invitations ORDER BY id asc", (err, res) => {
     if (err) return next(err);
     response.json(res.rows);
@@ -13,21 +12,15 @@ router.get("/", (request, response, next) => {
 
 router.get("/test", (request, response, next) => {
   if (err) return next(err);
-  response.status(201).json({
-    message: "testtttting"
-  });
+  response.json({ message: "it is working!" });
 });
 
 router.post("/", (request, response, next) => {
-  console.log("+++++++++++++++++++++++++++");
-  console.log("REQUEST", request);
   const {
     first_name_a,
     last_name_a,
     first_name_b,
     last_name_b,
-    plus_one,
-    num_kids,
     address,
     address_apt_number,
     address_city,
@@ -41,14 +34,12 @@ router.post("/", (request, response, next) => {
     total_kids
   } = request.body;
   pool.query(
-    "INSERT INTO invitations(first_name_a, last_name_a, first_name_b, last_name_b, plus_one, num_kids, address, address_apt_number, address_city, address_state, address_zip, relation, side, email, email_alt, total_adults, total_kids) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)",
+    "INSERT INTO invitations(first_name_a, last_name_a, first_name_b, last_name_b, address, address_apt_number, address_city, address_state, address_zip, relation, side, email, email_alt, total_adults, total_kids) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)",
     [
       first_name_a,
       last_name_a,
       first_name_b,
       last_name_b,
-      plus_one,
-      num_kids,
       address,
       address_apt_number,
       address_city,
@@ -62,6 +53,8 @@ router.post("/", (request, response, next) => {
       total_kids
     ],
     (err, res) => {
+      console.log("ERR", err);
+      console.log("RES", res);
       if (err) return next(err);
       response.status(201).json({
         message: "Created invite successfully"
@@ -72,7 +65,6 @@ router.post("/", (request, response, next) => {
 
 router.get("/bySide/:side", (request, response, next) => {
   const { side } = request.params;
-  console.log("REQUEST.PARAMS", request.params);
   pool.query(
     "SELECT * FROM invitations WHERE side = $1 ORDER BY id asc",
     [side],
