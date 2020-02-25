@@ -18,6 +18,8 @@ router.get("/test", (request, response, next) => {
 });
 
 router.post("/", (request, response, next) => {
+  console.log("+++++++++++++++++++++++++++");
+  console.log("REQUEST", request);
   const {
     first_name_a,
     last_name_a,
