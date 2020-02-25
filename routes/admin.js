@@ -36,7 +36,7 @@ router.post("/", (request, response, next) => {
     email_alt,
     total_adults,
     total_kids
-  } = request.body.message;
+  } = request.body;
   pool.query(
     "INSERT INTO invitations(first_name_a, last_name_a, first_name_b, last_name_b, plus_one, num_kids, address, address_apt_number, address_city, address_state, address_zip, relation, side, email, email_alt, total_adults, total_kids) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)",
     [
@@ -109,7 +109,7 @@ router.get("/totals/:relation/:side", (request, response, next) => {
     [side, relation],
     (err, res) => {
       if (err) return next(err);
-      response.json(res.rows);
+      response.json(...res.rows);
     }
   );
 });
