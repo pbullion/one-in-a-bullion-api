@@ -10,9 +10,9 @@ router.get("/", (request, response, next) => {
   });
 });
 
-router.get("/test", (request, response, next) => {
+router.get("/status", (request, response, next) => {
   if (err) return next(err);
-  response.json({ message: "it is working!" });
+  response.status(201).json({ message: "hello" });
 });
 
 router.post("/", (request, response, next) => {
@@ -53,8 +53,6 @@ router.post("/", (request, response, next) => {
       total_kids
     ],
     (err, res) => {
-      console.log("ERR", err);
-      console.log("RES", res);
       if (err) return next(err);
       response.status(201).json({
         message: "Created invite successfully"
@@ -126,8 +124,30 @@ router.delete("/:id", (request, response, next) => {
   pool.query("DELETE FROM invitations WHERE id = $1", [id], (err, res) => {
     if (err) return next(err);
     response.status(201).json({
-      message: "Created message successfully"
+      message: "Message deleted successfully"
     });
+  });
+});
+
+router.put("/:id", (request, response, next) => {
+  const { id } = request.params;
+  const keys = Object.keys(request.body);
+  const fields = [];
+
+  keys.forEach(key => {
+    if (request.body[key] !== null) fields.push(key);
+  });
+  fields.forEach((field, index) => {
+    pool.query(
+      `UPDATE invitations SET ${field}=($1) WHERE id=$2`,
+      [request.body[field], id],
+      (err, res) => {
+        if (err) return next(err);
+        if (index === fields.length - 1) {
+          response.send("it was updated");
+        }
+      }
+    );
   });
 });
 
