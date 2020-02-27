@@ -18,8 +18,7 @@ router.get("/:first_name/:last_name", (request, response, next) => {
 
 router.get("/list", (request, response, next) => {
   pool.query(
-    `select * from invitations where rsvp_yes_adults > 0 or rsvp_yes_kids > 0 or rsvp_no_adults > 0 order by rsvp_time`,
-    [first_name, last_name, first_name, last_name],
+    `select * from invitations where rsvp_yes_adults > 0 or rsvp_yes_kids > 0 or rsvp_no_adults > 0 order by rsvp_time desc`,
     (err, res) => {
       if (err) return next(err);
       response.json(res.rows);
