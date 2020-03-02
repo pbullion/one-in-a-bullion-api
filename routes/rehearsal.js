@@ -5,7 +5,7 @@ const router = Router();
 var moment = require("moment");
 
 router.get("/", (request, response, next) => {
-  pool.query(`SELECT * FROM rehearsal_restaurants`, (err, res) => {
+  pool.query(`SELECT * FROM rehearsal_dinner_restaurants`, (err, res) => {
     if (err) return next(err);
     response.json(res.rows);
   });
